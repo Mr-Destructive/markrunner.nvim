@@ -1,5 +1,27 @@
 local M = {}
 
+-- generate the run command based on the language provided
+local function get_command(language)
+    if language == "python" then
+        command = "!python3 "
+    elseif language == "go" then
+        command = "!go run "
+    elseif language == "javascript" then
+        command = "!node "
+    elseif language == "bash" then
+        command = "!bash "
+    elseif language == "lua" then
+        command = "!lua " 
+    end
+    return command
+end
+-- run the temp file to execute the code
+local function run_tmp_file(command, file_name)
+  run_command = command .. file_name
+  --vim.api.nvim_command(run_command)
+  vim.cmd(run_command)
+end
+
 -- get the selected text
 -- fenced code block and type of language after the backticks
 local function get_selected_text()
@@ -20,7 +42,18 @@ end
 
 function M.MarkRunner()
   local lines = get_selected_text()
-  print(lines)
+  lang = string.sub(lines[1], 4)
+  local lang_extension = {python="py",go="go", cpp="cpp", javascript="js", lua="lua", bash="sh", c="c",}
+  local code = {unpack(lines, 2)}
+  local file_name = os.tmpname() .. "." .. lang_extension[lang]
+  local filehandle = assert(io.open(file_name, "w"))
+  for _, line in ipairs(code) do
+    filehandle:write(line .. "\n")
+  end
+  filehandle:close()
+  command = get_command(lang)
+  run_tmp_file(command, file_name)
+  os.remove(file_name)
 end
 
 --[[
