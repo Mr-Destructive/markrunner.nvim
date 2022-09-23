@@ -15,6 +15,14 @@ local function get_command(language)
     end
     return command
 end
+
+local function write_temp_file(file_name, code)
+  local filehandle = assert(io.open(file_name, "w"))
+  for _, line in ipairs(code) do
+    filehandle:write(line .. "\n")
+  end
+  filehandle:close()
+end
 -- run the temp file to execute the code
 local function run_tmp_file(command, file_name)
   run_command = command .. file_name
@@ -46,12 +54,8 @@ function M.MarkRunner()
   local lang_extension = {python="py",go="go", cpp="cpp", javascript="js", lua="lua", bash="sh", c="c",}
   local code = {unpack(lines, 2)}
   local file_name = os.tmpname() .. "." .. lang_extension[lang]
-  local filehandle = assert(io.open(file_name, "w"))
-  for _, line in ipairs(code) do
-    filehandle:write(line .. "\n")
-  end
-  filehandle:close()
   command = get_command(lang)
+  write_temp_file(file_name, code)
   run_tmp_file(command, file_name)
   os.remove(file_name)
 end
