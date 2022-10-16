@@ -12,6 +12,8 @@ local function get_command(language)
         command = "!bash "
     elseif language == "lua" then
         command = "!lua " 
+    else 
+        command = "echo 'Language not supported'"
     end
     return command
 end
@@ -48,20 +50,26 @@ local function get_selected_text()
 end
 
 
-function M.MarkRunner()
+function MarkRunner()
   local lines = get_selected_text()
   lang = string.sub(lines[1], 4)
   local lang_extension = {python="py",go="go", cpp="cpp", javascript="js", lua="lua", bash="sh", c="c",}
   local code = {unpack(lines, 2)}
-  local file_name = os.tmpname() .. "." .. lang_extension[lang]
-  command = get_command(lang)
-  write_temp_file(file_name, code)
-  run_tmp_file(command, file_name)
-  os.remove(file_name)
-end
+  local file_name = os.tmpname()
+  local command = get_command(lang)
+  if lang_extension[lang] then
+    local file_name = file_name .. "." .. lang_extension[lang]
+      write_temp_file(file_name, code)
+      run_tmp_file(command, file_name)
+      os.remove(file_name)
+  else
+      vim.cmd(command)
+  end
 
+end
+MarkRunner()
 --[[
-```go
+```golang
 package main
 import "fmt"
 func main(){
